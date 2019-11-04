@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox, QPushButton
+from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox
 from hw1UI import Ui_Dialog
 import cv2 as cv
 import numpy as np
@@ -508,19 +508,13 @@ class MyDlg(QDialog):
         test = DataLoader(test_data[Index])
         test_x, test_y = test
         output = model_CNN_50(test_x)
+        output = F.softmax(output, dim=1)
         output = output.tolist()[0]
-        maxElement = max(output)
-        outputProb = []
-        outputProbLabel = []
-        for item in output:
-            if item == maxElement:
-                outputProb.append(1)
-            else:
-                outputProb.append(0)
-            outputProbLabel.append(output.index(item))
+
+        outputProbLabel = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         fig.add_subplot(1, 2, 2)
         plt.xticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        plt.bar(outputProbLabel, outputProb)
+        plt.bar(outputProbLabel, output)
 
 def main_start():
     app = QApplication(sys.argv)
