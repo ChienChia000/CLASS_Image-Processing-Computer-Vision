@@ -50,7 +50,7 @@ OPTIMIZER = "SGD"
 PRINT_FREQ = 100
 TRAIN_NUMS = 49000
 def downloadMNIST():
-    data_transform = transforms.Compose([transforms.ToTensor()])
+    data_transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     train_data = datasets.MNIST(root="./", train=True,download=True, transform=data_transform)
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, sampler=SubsetRandomSampler(range(TRAIN_NUMS)))
     val_loader = DataLoader(train_data, batch_size=BATCH_SIZE, sampler=SubsetRandomSampler(range(TRAIN_NUMS, 60000)))
@@ -154,33 +154,47 @@ class Trainer:
 class CNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1, self.conv2 = None, None
-        self.fc1, self.fc2 = None, None
+        self.conv1, self.conv3 = None, None
+        self.sub2, self.sub4 = None, None
+        self.fc1, self.fc2, self.fc3 = None, None, None
         
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=0, bias=False),
+            nn.Conv2d(1, 6, kernel_size=5, stride=1, padding=0, bias=True),
             nn.ReLU(inplace=False)
         )
+        self.sub2 = nn.Sequential(
+            nn.MaxPool2d(kernel_size=2)
+        )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=0, bias=False),
+            nn.Conv2d(6, 16, kernel_size=5, stride=1, padding=0, bias=True),
             nn.ReLU(inplace=False)
+        )
+        self.sub4 = nn.Sequential(
+            nn.MaxPool2d(kernel_size=2)
         )
         
         self.fc1 = nn.Sequential(
-            nn.Linear(1152, 200, bias = False),
+            nn.Linear(16*5*5, 120),
             nn.ReLU(inplace=False)
         )
         self.fc2 = nn.Sequential(
-            nn.Linear(200, 10, bias = False)
+            nn.Linear(120, 84),
+            nn.ReLU(inplace=False)
+        )
+        self.fc3 = nn.Sequential(
+            nn.Linear(84, 10)
         )
         
     def forward(self, x):
-        out = None
-        out = self.conv1(x)
+        out = x
+        out = self.conv1(out)
+        out = self.sub2(out)
         out = self.conv2(out)
+        out = self.sub4(out)
         out = flatten(out)
         out = self.fc1(out)
         out = self.fc2(out)
+        out = self.fc3(out)
         return out
 # end CNN
 
@@ -445,7 +459,7 @@ class MyDlg(QDialog):
             randomNum = random.randint(0,60000)
             train_image, train_image_label = train_data[randomNum]
             train_image = np.array(train_image, dtype='float')
-            pixels = train_image.reshape((28, 28))
+            pixels = train_image.reshape((32, 32))
             fig.add_subplot(rows, columns, i)
             plt.xlabel(train_image_label)
             plt.xticks([])
@@ -494,14 +508,12 @@ class MyDlg(QDialog):
         fig = plt.figure(figsize=(14, 6), num='5.5')
         TEST_IMAGE, test_image_label = test_data[Index]
         test_image = np.array(TEST_IMAGE, dtype='float')
-        pixels = test_image.reshape((28, 28))
+        pixels = test_image.reshape((32, 32))
         fig.add_subplot(1, 2, 1)
         plt.xticks([])
         plt.yticks([])
         plt.imshow(pixels, cmap='gray')
         fig.show()
-
-        # print(TEST_IMAGE)
 
         # Test Model
         model_CNN_50.eval()
