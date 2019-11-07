@@ -47,13 +47,11 @@ EPOCHS = 1
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
 OPTIMIZER = "SGD"
-PRINT_FREQ = 100
-TRAIN_NUMS = 49000
 def downloadMNIST():
     data_transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     train_data = datasets.MNIST(root="./", train=True,download=True, transform=data_transform)
-    train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, sampler=SubsetRandomSampler(range(TRAIN_NUMS)))
-    val_loader = DataLoader(train_data, batch_size=BATCH_SIZE, sampler=SubsetRandomSampler(range(TRAIN_NUMS, 60000)))
+    train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, sampler=SubsetRandomSampler(range(50000)))
+    val_loader = DataLoader(train_data, batch_size=BATCH_SIZE, sampler=SubsetRandomSampler(range(50000, 60000)))
     test_data = datasets.MNIST(root="./", train=False, download=True, transform=data_transform)
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE)
     return train_data, train_loader, test_data, test_loader, val_loader
@@ -103,7 +101,7 @@ class Trainer:
             flag=flag+1
             ###################################
             
-            if step >= 0 and (step % PRINT_FREQ == 0):
+            if step >= 0 and (step % 100 == 0):
                 self._state_logging(outs, y, loss, step, epoch, "Training")
             
             loss.backward()
