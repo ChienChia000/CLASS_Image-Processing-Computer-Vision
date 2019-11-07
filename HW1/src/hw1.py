@@ -500,7 +500,7 @@ class MyDlg(QDialog):
 
         # Load Model
         model_CNN_50 = CNN()
-        model_CNN_50.load_state_dict(torch.load("./model"))
+        model_CNN_50.load_state_dict(torch.load("./model.pkl"))
         train_data, train_loader, test_data, test_loader, val_loader = downloadMNIST()
         # Plot Test Image
         fig = plt.figure(figsize=(14, 6), num='5.5')
